@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
+<book xmlns="http://www.devhelp.net/book" title="libredis Reference Manual" link="index.html" author="" name="libredis" version="2" language="c">
+  <chapters>
+    <sub name="libredis API reference" link="ch01.html">
+      <sub name="libredis API" link="libredis-libredis-API.html"/>
+      <sub name="Binary String support" link="libredis-Binary-String-support.html"/>
+    </sub>
+    <sub name="API Index" link="api-index-full.html"/>
+  </chapters>
+  <functions>
+    <keyword type="struct" name="REDIS" link="libredis-libredis-API.html#REDIS:CAPS"/>
+    <keyword type="struct" name="RedisCmd" link="libredis-libredis-API.html#RedisCmd"/>
+    <keyword type="struct" name="RedisRetVal" link="libredis-libredis-API.html#RedisRetVal"/>
+    <keyword type="enum" name="enum RedisReturnType" link="libredis-libredis-API.html#RedisReturnType"/>
+    <keyword type="enum" name="enum RedisProtocolType" link="libredis-libredis-API.html#RedisProtocolType"/>
+    <keyword type="enum" name="enum redisErrorCode" link="libredis-libredis-API.html#redisErrorCode"/>
+    <keyword type="function" name="redis_connect ()" link="libredis-libredis-API.html#redis-connect"/>
+    <keyword type="function" name="redis_close ()" link="libredis-libredis-API.html#redis-close"/>
+    <keyword type="function" name="redisCmd_new ()" link="libredis-libredis-API.html#redisCmd-new"/>
+    <keyword type="function" name="redisCmd_newFromStr ()" link="libredis-libredis-API.html#redisCmd-newFromStr"/>
+    <keyword type="function" name="redisCmd_addArg ()" link="libredis-libredis-API.html#redisCmd-addArg"/>
+    <keyword type="function" name="redisCmd_free ()" link="libredis-libredis-API.html#redisCmd-free"/>
+    <keyword type="function" name="redisCmd_buildProtocolStr ()" link="libredis-libredis-API.html#redisCmd-buildProtocolStr"/>
+    <keyword type="function" name="redisCmd_exec ()" link="libredis-libredis-API.html#redisCmd-exec"/>
+    <keyword type="function" name="redisCmd_reset ()" link="libredis-libredis-API.html#redisCmd-reset"/>
+    <keyword type="function" name="redisCmd_setProtocolType ()" link="libredis-libredis-API.html#redisCmd-setProtocolType"/>
+    <keyword type="function" name="redisCmd_getRetVal ()" link="libredis-libredis-API.html#redisCmd-getRetVal"/>
+    <keyword type="function" name="redisRetVal_free ()" link="libredis-libredis-API.html#redisRetVal-free"/>
+    <keyword type="function" name="redis_exec ()" link="libredis-libredis-API.html#redis-exec"/>
+    <keyword type="function" name="redis_execStr ()" link="libredis-libredis-API.html#redis-execStr"/>
+    <keyword type="function" name="redisError_getStr ()" link="libredis-libredis-API.html#redisError-getStr"/>
+    <keyword type="function" name="redisError_getSysErrorStr ()" link="libredis-libredis-API.html#redisError-getSysErrorStr"/>
+    <keyword type="typedef" name="bstr_t" link="libredis-Binary-String-support.html#bstr-t"/>
+    <keyword type="function" name="bstr_new ()" link="libredis-Binary-String-support.html#bstr-new"/>
+    <keyword type="function" name="bstr_newFromCStr ()" link="libredis-Binary-String-support.html#bstr-newFromCStr"/>
+    <keyword type="function" name="bstr_free ()" link="libredis-Binary-String-support.html#bstr-free"/>
+    <keyword type="function" name="bstr_toCStr ()" link="libredis-Binary-String-support.html#bstr-toCStr"/>
+    <keyword type="function" name="bstr_len ()" link="libredis-Binary-String-support.html#bstr-len"/>
+    <keyword type="function" name="bstr_cat ()" link="libredis-Binary-String-support.html#bstr-cat"/>
+    <keyword type="function" name="bstr_catBStr ()" link="libredis-Binary-String-support.html#bstr-catBStr"/>
+    <keyword type="function" name="bstr_catCStr ()" link="libredis-Binary-String-support.html#bstr-catCStr"/>
+    <keyword type="function" name="bstr_dup ()" link="libredis-Binary-String-support.html#bstr-dup"/>
+    <keyword type="function" name="bstr_asprintf ()" link="libredis-Binary-String-support.html#bstr-asprintf"/>
+    <keyword type="function" name="bstr_scatprintf ()" link="libredis-Binary-String-support.html#bstr-scatprintf"/>
+  </functions>
+</book>

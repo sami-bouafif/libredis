@@ -1,0 +1,547 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Binary String support</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.1">
+<link rel="home" href="index.html" title="libredis Reference Manual">
+<link rel="up" href="ch01.html" title="libredis API reference">
+<link rel="prev" href="libredis-libredis-API.html" title="libredis API">
+<link rel="next" href="api-index-full.html" title="API Index">
+<meta name="generator" content="GTK-Doc V1.14 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="libredis-libredis-API.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">libredis Reference Manual</th>
+<td><a accesskey="n" href="api-index-full.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#libredis-Binary-String-support.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#libredis-Binary-String-support.description" class="shortcut">Description</a>
+</td></tr>
+</table>
+<div class="refentry" title="Binary String support">
+<a name="libredis-Binary-String-support"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="libredis-Binary-String-support.top_of_page"></a>Binary String support</span></h2>
+<p>Binary String support — Typedef and functions to support binary string.</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv" title="Synopsis">
+<a name="libredis-Binary-String-support.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">
+#include &lt;bstr.h&gt;
+
+typedef             <a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t">bstr_t</a>;
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              <a class="link" href="libredis-Binary-String-support.html#bstr-new" title="bstr_new ()">bstr_new</a>                            (<em class="parameter"><code><span class="type">char</span> *from</code></em>,
+                                                         <em class="parameter"><code><span class="type">size_t</span> size</code></em>);
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              <a class="link" href="libredis-Binary-String-support.html#bstr-newFromCStr" title="bstr_newFromCStr ()">bstr_newFromCStr</a>                    (<em class="parameter"><code><span class="type">char</span> *cstr</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()">bstr_free</a>                           (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);
+<span class="returnvalue">char</span>*               <a class="link" href="libredis-Binary-String-support.html#bstr-toCStr" title="bstr_toCStr ()">bstr_toCStr</a>                         (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);
+<span class="returnvalue">size_t</span>              <a class="link" href="libredis-Binary-String-support.html#bstr-len" title="bstr_len ()">bstr_len</a>                            (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              <a class="link" href="libredis-Binary-String-support.html#bstr-cat" title="bstr_cat ()">bstr_cat</a>                            (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *cstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">size_t</span> size</code></em>);
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              <a class="link" href="libredis-Binary-String-support.html#bstr-catBStr" title="bstr_catBStr ()">bstr_catBStr</a>                        (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> to</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> from</code></em>);
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              <a class="link" href="libredis-Binary-String-support.html#bstr-catCStr" title="bstr_catCStr ()">bstr_catCStr</a>                        (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *cstr</code></em>);
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              <a class="link" href="libredis-Binary-String-support.html#bstr-dup" title="bstr_dup ()">bstr_dup</a>                            (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libredis-Binary-String-support.html#bstr-asprintf" title="bstr_asprintf ()">bstr_asprintf</a>                       (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> *bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *fmt</code></em>,
+                                                         <em class="parameter"><code>...</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libredis-Binary-String-support.html#bstr-scatprintf" title="bstr_scatprintf ()">bstr_scatprintf</a>                     (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> *bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *fmt</code></em>,
+                                                         <em class="parameter"><code>...</code></em>);
+</pre>
+</div>
+<div class="refsect1" title="Description">
+<a name="libredis-Binary-String-support.description"></a><h2>Description</h2>
+<p>
+A collection of function and a structure to support strings that can contain
+one or more <code class="code">\0</code> characters. These functions implements basic
+string operations similar to these applicable to standard string format.
+</p>
+</div>
+<div class="refsect1" title="Details">
+<a name="libredis-Binary-String-support.details"></a><h2>Details</h2>
+<div class="refsect2" title="bstr_t">
+<a name="bstr-t"></a><h3>bstr_t</h3>
+<p>
+An opaque structure to represent a bstring. It is a rough representation of
+pascal string where the length of the string precede the string itself, so
+<code class="code">\0</code> characters can be embedded in the string without truncating it.
+</p>
+<p>
+The memory occupied by <a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> is represented internally as <code class="code">size_t</code>
+followed by a <code class="code">char *</code> and a <code class="code">\0</code> character, and
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> itself points to the <code class="code">char *</code> portion.
+This is set manually rather than using a <code class="code">struct</code> to emphasis the
+fact that the only exploitable part is the string part.
+The length part is updated automatically by <a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> related functions.<br>
+</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>
+Using <code class="code">struct</code> to define <code class="code">bstr_t</code> is just a way to
+prevent the compiler from implicit casting <code class="code">bstr_t</code> to
+<code class="code">char *</code>.
+</p>
+</div>
+<p>
+Since <a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> points to the string part of the structure, it can be used
+anywhere <code class="code">char *</code> is usable (with an explicit cast) but, if the
+string has more than one <code class="code">\0</code> character, the result will be
+truncated on the first one.
+</p>
+<p>
+Note also that modifying the string part of <a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> directly (modifying
+<a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> as a <code class="code">char *</code>) will invalidate the length part and
+therefore, the effect of <a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> related functions on the modified version
+will be unpredictable.<br>
+It is advised to use the cast in read-only operations. For read-write ones,
+get a copy of the string with <a class="link" href="libredis-Binary-String-support.html#bstr-toCStr" title="bstr_toCStr ()"><code class="function">bstr_toCStr()</code></a>.
+</p>
+</div>
+<hr>
+<div class="refsect2" title="bstr_new ()">
+<a name="bstr-new"></a><h3>bstr_new ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              bstr_new                            (<em class="parameter"><code><span class="type">char</span> *from</code></em>,
+                                                         <em class="parameter"><code><span class="type">size_t</span> size</code></em>);</pre>
+<p>
+Create a new bstring of length <em class="parameter"><code>size</code></em> from the character array <em class="parameter"><code>from</code></em>.
+</p>
+<p>
+If <em class="parameter"><code>size</code></em> is -1, the length of the resulting bstring is calculated using <code class="code">strlen(<em class="parameter"><code>from</code></em>)</code>
+and the resulting bstring will be a copy of <em class="parameter"><code>from</code></em>.<br>
+If <em class="parameter"><code>size</code></em> is  0, the length of the resulting bstring will be 0 and <em class="parameter"><code>from</code></em> will be ignored.<br>
+If <em class="parameter"><code>from</code></em> is NULL, <a class="link" href="libredis-Binary-String-support.html#bstr-new" title="bstr_new ()"><code class="function">bstr_new()</code></a> will create a bstring of length <em class="parameter"><code>size</code></em> with zeroed elements.
+</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>
+If <em class="parameter"><code>size</code></em> exceeds the length of the character array <em class="parameter"><code>from</code></em>, the result will
+be unpredictable.
+</p>
+</div>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>from</code></em> :</span></p></td>
+<td>a string from which to create the bstring or NULL.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>size</code></em> :</span></p></td>
+<td>number of characters to use in creating the bstring or -1.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> a newly allocated bstring or NULL on error (usually a result of
+memory allocation error).
+The returned value should be freed with <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_newFromCStr ()">
+<a name="bstr-newFromCStr"></a><h3>bstr_newFromCStr ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              bstr_newFromCStr                    (<em class="parameter"><code><span class="type">char</span> *cstr</code></em>);</pre>
+<p>
+Construct a new bstring from a C string. It is equivalent to
+<code class="code">bstr_new(<em class="parameter"><code>cstr</code></em>, -1)</code> (See also <a class="link" href="libredis-Binary-String-support.html#bstr-new" title="bstr_new ()"><code class="function">bstr_new()</code></a>).
+</p>
+<p>
+If <em class="parameter"><code>cstr</code></em> is NULL, the length of the resulting bstring will be 0.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cstr</code></em> :</span></p></td>
+<td>a C-style string or NULL.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> a newly allocated bstring copy of <em class="parameter"><code>cstr</code></em> or NULL on error (usually a
+result of memory allocation error). The returned value should be freed with
+<a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_free ()">
+<a name="bstr-free"></a><h3>bstr_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                bstr_free                           (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);</pre>
+<p>
+Free the memory allocated to <em class="parameter"><code>bstr</code></em>.
+</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>It is advised to free memory allocated to bstrings that are no
+longer used with <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a>.</p>
+</div>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>the bstring to free.
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_toCStr ()">
+<a name="bstr-toCStr"></a><h3>bstr_toCStr ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span>*               bstr_toCStr                         (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);</pre>
+<p>
+Convert a bstring to a C-style string.
+</p>
+<p>
+The resulting string will be truncated at the first <code class="code">\0</code>. So if
+<em class="parameter"><code>bstr</code></em> doesn't contain any <code class="code">\0</code> (only the <code class="code">\0</code> at the end),
+the resulting string should be a copy of the original.
+</p>
+<p>
+Note that <em class="parameter"><code>bstr</code></em> can be used as <code class="code">char *</code> with an explicit cast like:
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="normal">str </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="type">char</span><span class="normal"> </span><span class="symbol">*)</span><span class="normal">bstr</span><span class="symbol">;</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+but there is some rules on using <em class="parameter"><code>str</code></em> in this case:<br>
+- <em class="parameter"><code>str</code></em> should never be freed with <code class="function">free()</code>.<br>
+- <em class="parameter"><code>str</code></em> should never be manipulated with standard string functions, get a C-style
+copy of <em class="parameter"><code>bstr</code></em> with <a class="link" href="libredis-Binary-String-support.html#bstr-toCStr" title="bstr_toCStr ()"><code class="function">bstr_toCStr()</code></a> instead.
+</p>
+<p>
+The cast to <code class="code">char *</code> can be used for simple operation such as
+printing :
+</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function">printf</span><span class="symbol">(</span><span class="string">"%s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,(</span><span class="type">char</span><span class="normal"> </span><span class="symbol">*)</span><span class="normal">bstr</span><span class="symbol">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+and even this is not needed since the <code class="code">%B</code> modifier can be used
+to print a bstring.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>a bstring to convert.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> a C-style string. The returned string should be freed withe
+<code class="function"><code class="function">free()</code></code> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_len ()">
+<a name="bstr-len"></a><h3>bstr_len ()</h3>
+<pre class="programlisting"><span class="returnvalue">size_t</span>              bstr_len                            (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);</pre>
+<p>
+Retrieve the length of a bstring.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>a bstring.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> the length of <em class="parameter"><code>bstr</code></em>.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_cat ()">
+<a name="bstr-cat"></a><h3>bstr_cat ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              bstr_cat                            (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *cstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">size_t</span> size</code></em>);</pre>
+<p>
+Concatenate <em class="parameter"><code>size</code></em> characters from <em class="parameter"><code>cstr</code></em> to <em class="parameter"><code>bstr</code></em>.
+</p>
+<p>
+If <em class="parameter"><code>size</code></em> is -1, <code class="function"><code class="function">strlen()</code></code> is used to calculate the number
+of characters to concatenate.<br>
+If <em class="parameter"><code>cstr</code></em> is NULL, <em class="parameter"><code>bstr</code></em> is return as it is.<br>
+If <em class="parameter"><code>bstr</code></em> is NULL, this is the same as calling <a class="link" href="libredis-Binary-String-support.html#bstr-new" title="bstr_new ()"><code class="function">bstr_new()</code></a> with <em class="parameter"><code>cstr</code></em> and <em class="parameter"><code>size</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>the bstring to append to or NULL.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cstr</code></em> :</span></p></td>
+<td>the C-style string to append or NULL.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>size</code></em> :</span></p></td>
+<td>the number of characters to append or -1.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> the concatenated bstring (<em class="parameter"><code>bstr</code></em>) or NULL on error. (usually a result
+of a memory allocation error). The returned value should be freed with
+<a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_catBStr ()">
+<a name="bstr-catBStr"></a><h3>bstr_catBStr ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              bstr_catBStr                        (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> to</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> from</code></em>);</pre>
+<p>
+Concatenate 2 bstrings. The result is stored in <em class="parameter"><code>to</code></em>.
+</p>
+<p>
+If <em class="parameter"><code>from</code></em> is NULL, <em class="parameter"><code>to</code></em> remain unchanged and returned as it is.<br>
+If <em class="parameter"><code>to</code></em> is NULL, this is equivalent to <code class="code">bstr_dup(<em class="parameter"><code>from</code></em>)</code>.
+</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>
+If <em class="parameter"><code>to</code></em> or <em class="parameter"><code>from</code></em> are not initialized, the result is unpredictable.
+</p>
+</div>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>to</code></em> :</span></p></td>
+<td>the bstring to append to or NULL.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>from</code></em> :</span></p></td>
+<td>the bstring to append or NULL.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> the concatenated bstring (<em class="parameter"><code>to</code></em>) or NULL on error (usually a result of
+an error while expanding the memory allocated to <em class="parameter"><code>to</code></em>). The returned value
+should be freed with <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_catCStr ()">
+<a name="bstr-catCStr"></a><h3>bstr_catCStr ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              bstr_catCStr                        (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *cstr</code></em>);</pre>
+<p>
+Concatenate <em class="parameter"><code>cstr</code></em> to <em class="parameter"><code>bstr</code></em>. This has the same effect as
+<code class="code">bstr_cat(<em class="parameter"><code>bstr</code></em>, <em class="parameter"><code>cstr</code></em>, -1)</code> (See <a class="link" href="libredis-Binary-String-support.html#bstr-cat" title="bstr_cat ()"><code class="function">bstr_cat()</code></a>).
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>the bstring to append to.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>cstr</code></em> :</span></p></td>
+<td>the C-style string to append.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> the concatenated bstring (<em class="parameter"><code>bstr</code></em>) or NULL on error (memory allocation
+error). The returned value should be freed with <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer
+needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_dup ()">
+<a name="bstr-dup"></a><h3>bstr_dup ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="returnvalue">bstr_t</span></a>              bstr_dup                            (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> bstr</code></em>);</pre>
+<p>
+Duplicates a bstring and return the newly created one.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>the bstring to duplicate
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> a bstring copy of <em class="parameter"><code>bstr</code></em> or NULL on error (memory allocation error).
+The returned value should be freed with <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_asprintf ()">
+<a name="bstr-asprintf"></a><h3>bstr_asprintf ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 bstr_asprintf                       (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> *bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *fmt</code></em>,
+                                                         <em class="parameter"><code>...</code></em>);</pre>
+<p>
+Like asprintf, but prints in a bstr_t var. No need to preallocate storage,
+but <em class="parameter"><code>bstr</code></em> must be freed manually.
+</p>
+<p>
+</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>
+There is also the new printf modifier <code class="code">%B</code> that can be used
+to print a bstring. This modifier is usable in all printf-like functions.
+</p>
+</div>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>the bstring to print to.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>fmt</code></em> :</span></p></td>
+<td>the printf-style format string.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>...</code></em> :</span></p></td>
+<td>the list of args conforming to <em class="parameter"><code>fmt</code></em> format.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> the number of character writen or -1 on error. <em class="parameter"><code>bstr</code></em> should be freed
+with <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="bstr_scatprintf ()">
+<a name="bstr-scatprintf"></a><h3>bstr_scatprintf ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 bstr_scatprintf                     (<em class="parameter"><code><a class="link" href="libredis-Binary-String-support.html#bstr-t" title="bstr_t"><span class="type">bstr_t</span></a> *bstr</code></em>,
+                                                         <em class="parameter"><code><span class="type">char</span> *fmt</code></em>,
+                                                         <em class="parameter"><code>...</code></em>);</pre>
+<p>
+Like <a class="link" href="libredis-Binary-String-support.html#bstr-asprintf" title="bstr_asprintf ()"><code class="function">bstr_asprintf()</code></a>, but append to the input bstr_t var. <em class="parameter"><code>bstr</code></em> is resized
+to fit to the concatenated string.
+</p>
+<p>
+</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>
+There is also the new printf modifier <code class="code">%B</code> that can be used
+to print a bstring. This modifier is usable in all printf-like functions.
+</p>
+</div>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bstr</code></em> :</span></p></td>
+<td>the bstring to append to.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>fmt</code></em> :</span></p></td>
+<td>the printf-style format string.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>...</code></em> :</span></p></td>
+<td>the list of args conforming to <em class="parameter"><code>fmt</code></em> format.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> the number of appended characters or -1 on error. <em class="parameter"><code>bstr</code></em> should be
+freed with <a class="link" href="libredis-Binary-String-support.html#bstr-free" title="bstr_free ()"><code class="function">bstr_free()</code></a> when no longer needed.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.14</div>
+</body>
+</html>

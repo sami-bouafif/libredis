@@ -22,9 +22,21 @@
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
 
+/* Define to 1 if you have the <printf.h> header file. */
+#undef HAVE_PRINTF_H
+
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
 #undef HAVE_REALLOC
+
+/* Define to 1 if you have the `register_printf_function' function. */
+#undef HAVE_REGISTER_PRINTF_FUNCTION
+
+/* Define to 1 if you have the `register_printf_specifier' function. */
+#undef HAVE_REGISTER_PRINTF_SPECIFIER
+
+/* Define to 1 if you have the `register_printf_type' function. */
+#undef HAVE_REGISTER_PRINTF_TYPE
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
@@ -43,6 +55,9 @@
 
 /* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H

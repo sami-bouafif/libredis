@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
+<book xmlns="http://www.devhelp.net/book" title="libredis Reference Manual" link="index.html" author="" name="libredis">
+  <chapters>
+    <sub name="libredis API reference" link="ch01.html">
+      <sub name="libredis API" link="libredis-libredis-API.html"/>
+      <sub name="Binary String support" link="libredis-Binary-String-support.html"/>
+    </sub>
+    <sub name="API Index" link="api-index-full.html"/>
+  </chapters>
+  <functions>
+    <function name="REDIS" link="libredis-libredis-API.html#REDIS:CAPS"/>
+    <function name="RedisCmd" link="libredis-libredis-API.html#RedisCmd"/>
+    <function name="RedisRetVal" link="libredis-libredis-API.html#RedisRetVal"/>
+    <function name="enum RedisReturnType" link="libredis-libredis-API.html#RedisReturnType"/>
+    <function name="enum RedisProtocolType" link="libredis-libredis-API.html#RedisProtocolType"/>
+    <function name="enum redisErrorCode" link="libredis-libredis-API.html#redisErrorCode"/>
+    <function name="redis_connect ()" link="libredis-libredis-API.html#redis-connect"/>
+    <function name="redis_close ()" link="libredis-libredis-API.html#redis-close"/>
+    <function name="redisCmd_new ()" link="libredis-libredis-API.html#redisCmd-new"/>
+    <function name="redisCmd_newFromStr ()" link="libredis-libredis-API.html#redisCmd-newFromStr"/>
+    <function name="redisCmd_addArg ()" link="libredis-libredis-API.html#redisCmd-addArg"/>
+    <function name="redisCmd_free ()" link="libredis-libredis-API.html#redisCmd-free"/>
+    <function name="redisCmd_buildProtocolStr ()" link="libredis-libredis-API.html#redisCmd-buildProtocolStr"/>
+    <function name="redisCmd_exec ()" link="libredis-libredis-API.html#redisCmd-exec"/>
+    <function name="redisCmd_reset ()" link="libredis-libredis-API.html#redisCmd-reset"/>
+    <function name="redisCmd_setProtocolType ()" link="libredis-libredis-API.html#redisCmd-setProtocolType"/>
+    <function name="redisCmd_getRetVal ()" link="libredis-libredis-API.html#redisCmd-getRetVal"/>
+    <function name="redisRetVal_free ()" link="libredis-libredis-API.html#redisRetVal-free"/>
+    <function name="redis_exec ()" link="libredis-libredis-API.html#redis-exec"/>
+    <function name="redis_execStr ()" link="libredis-libredis-API.html#redis-execStr"/>
+    <function name="redisError_getStr ()" link="libredis-libredis-API.html#redisError-getStr"/>
+    <function name="redisError_getSysErrorStr ()" link="libredis-libredis-API.html#redisError-getSysErrorStr"/>
+    <function name="bstr_t" link="libredis-Binary-String-support.html#bstr-t"/>
+    <function name="bstr_new ()" link="libredis-Binary-String-support.html#bstr-new"/>
+    <function name="bstr_newFromCStr ()" link="libredis-Binary-String-support.html#bstr-newFromCStr"/>
+    <function name="bstr_free ()" link="libredis-Binary-String-support.html#bstr-free"/>
+    <function name="bstr_toCStr ()" link="libredis-Binary-String-support.html#bstr-toCStr"/>
+    <function name="bstr_len ()" link="libredis-Binary-String-support.html#bstr-len"/>
+    <function name="bstr_cat ()" link="libredis-Binary-String-support.html#bstr-cat"/>
+    <function name="bstr_catBStr ()" link="libredis-Binary-String-support.html#bstr-catBStr"/>
+    <function name="bstr_catCStr ()" link="libredis-Binary-String-support.html#bstr-catCStr"/>
+    <function name="bstr_dup ()" link="libredis-Binary-String-support.html#bstr-dup"/>
+    <function name="bstr_asprintf ()" link="libredis-Binary-String-support.html#bstr-asprintf"/>
+    <function name="bstr_scatprintf ()" link="libredis-Binary-String-support.html#bstr-scatprintf"/>
+  </functions>
+</book>
