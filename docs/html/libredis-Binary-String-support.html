@@ -70,11 +70,18 @@ A collection of function and a structure to support strings that can contain
 one or more <code class="code">\0</code> characters. These functions implements basic
 string operations similar to these applicable to standard string format.
 </p>
+<p>
+For a standalone version to use outside libredis, see 
+<a class="ulink" href="http://github.com/sami-bouafif/libbstr" target="_top">
+http://github.com/sami-bouafif/libbstr</a>.
+</p>
 </div>
 <div class="refsect1" title="Details">
 <a name="libredis-Binary-String-support.details"></a><h2>Details</h2>
 <div class="refsect2" title="bstr_t">
 <a name="bstr-t"></a><h3>bstr_t</h3>
+<pre class="programlisting">typedef struct _bstr_t * bstr_t;
+</pre>
 <p>
 An opaque structure to represent a bstring. It is a rough representation of
 pascal string where the length of the string precede the string itself, so

@@ -5,18 +5,21 @@
  *
  * This file is part of libredis.
  *
- * libredis is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * libredis library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * libredis is distributed in the hope that it will be useful,
+ * libredis library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with libredis library.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * A copy of the GPL can be found in the file "COPYING" in this distribution.
+ * A copy of the LGPL can be found in the file "COPYING.LESSER" in this distribution.
  */
 
 
@@ -39,6 +42,10 @@
  * A collection of function and a structure to support strings that can contain
  * one or more <code>\0</code> characters. These functions implements basic
  * string operations similar to these applicable to standard string format.
+ * 
+ * For a standalone version to use outside libredis, see 
+ * <ulink role="online-location" url="http://github.com/sami-bouafif/libbstr">
+ * http://github.com/sami-bouafif/libbstr</ulink>.
  **/
 
 
