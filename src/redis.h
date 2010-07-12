@@ -58,41 +58,23 @@ typedef enum
 
 /**
  * RedisRetVal:
- * @type: type of the return value.
- * @errorMsg: if @type is %REDIS_RETURN_ERROR this var will hold the error
- * string or <code>NULL</code> if not.
- * @line: if @type is %REDIS_RETURN_LINE this var will hold the string returned
- * by Redis or <code>NULL</code> if not.
- * @bulk: if @type is %REDIS_RETURN_BULK this var will hold the data sequence
- * returned by Redis or <code>NULL</code> if not.
- * @multibulk: if @type is %REDIS_RETURN_MULTIBULK this var will hold the array
- * of data sequences returned by Redis or <code>NULL</code> if not.
- * @multibulkSize: if @type is %REDIS_RETURN_MULTIBULK this var will hold the
- * size of the array @multibulk.
- * @integer: f @type is %REDIS_RETURN_INTEGER this var will hold the integer
- * returned by Redis.
  *
- * Structure that holds the result of executing a Redis command. @type will
- * always contain the type of the result and the corresponding member the result.
+ * Structure that holds the result of executing a Redis command. The type of
+ * the result can be retrieved with redisRetVal_getType(), and the value with
+ * one of the <code>redisRetVal_get*</code> function. These functions must be
+ * called according to the value returned from redisRetVal_getType(). For
+ * example, if redisRetVal_getType() return %REDIS_RETURN_LINE,
+ * redisRetVal_getLine() should be called to retrieve the value.
  *
  * Note that #RedisRetVal is usually linked to a #RedisCmd structure and should
- * be freed manually (it will be freed when redisCmd_free() is called). However,
- * there is two exceptions to this rule, those returned by redis_exec() and
- * redis_execStr().
+ * not be freed manually (it will be freed when redisCmd_free() is called).
+ * However, there is two exceptions to this rule, those returned by redis_exec()
+ * and redis_execStr().
  * Those ones should be freed with redisRetVal_free() since they are not associated
  * with any #RedisCmd.
  **/
 typedef struct _RedisRetVal RedisRetVal;
-struct _RedisRetVal
-{
-  RedisReturnType  type;
-  bstr_t           errorMsg;
-  bstr_t           line;
-  bstr_t           bulk;
-  bstr_t           *multibulk;
-  int              multibulkSize;
-  int              integer;
-};
+
 /**
  * RedisCmd:
  *
@@ -110,6 +92,20 @@ struct _RedisRetVal
  **/
 typedef struct _RedisCmd RedisCmd;
 
+/**
+ * RedisCmdArray:
+ *
+ * This structure offer the possibility to execute multiple #RedisCmd at once.
+ * The main difference with a sequential execution is the way commands are sent
+ * the Redis server. In other words, it is an implementation of pipelining.<sbr/>
+ * With #RedisCmd, every command is sent individually and the result is
+ * retrieved for every command. On the other hand, with #RedisCmdArray, commands
+ * are sent at once and all results are retrieved with a single call.
+ *
+ */
+
+typedef struct _RedisCmdArray RedisCmdArray;
+
 volatile int redis_errCode = 0;
 /* errno set by standardlib functions */
 volatile int redis_sysErrno = 0;
@@ -126,27 +122,52 @@ typedef enum
   REDIS_ERROR_CNX_GAI,
   REDIS_ERROR_CMD_UNKNOWN,
   REDIS_ERROR_CMD_ARGS,
+  REDIS_ERROR_CMD_INVALIDARGNUM,
   REDIS_ERROR_CMD_INVALID,
-  REDIS_ERROR_CMD_UNBALANCEDQ
-} redisErrorCode;
+  REDIS_ERROR_CMD_UNBALANCEDQ,
+  REDIS_ERROR_RET_UNVALID,
+  REDIS_ERROR_RET_NOTMULTIBULK
+} RedisErrorCode;
 
 REDIS* redis_connect(char *host, char *port);
 void   redis_close(REDIS *redis);
 
 RedisCmd*     redisCmd_new(RedisProtocolType protocolType, char *cmdName);
 RedisCmd*     redisCmd_newFromStr(RedisProtocolType protocolType,
-                                  char *cmdStr,
-                                  int cmdLen);
-int          redisCmd_addArg(RedisCmd *cmd, char *arg, size_t arglen);
-void         redisCmd_free(RedisCmd *cmd);
-bstr_t       redisCmd_buildProtocolStr(RedisCmd *cmd);
-RedisRetVal* redisCmd_exec(REDIS *redis, RedisCmd *cmd);
-int          redisCmd_reset(RedisCmd *cmd, char *cmdName);
-int          redisCmd_setProtocolType(RedisCmd *cmd,
-                                           RedisProtocolType protocol);
-RedisRetVal* redisCmd_getRetVal(RedisCmd *cmd);
+                                  char              *cmdStr,
+                                  int               cmdLen);
+RedisErrorCode redisCmd_addArg(RedisCmd *cmd, char *arg, size_t arglen);
+RedisErrorCode redisCmd_setArg(RedisCmd *cmd,
+                               int      argNum,
+                               char     *argVal,
+                               size_t   argLen);
+void           redisCmd_free(RedisCmd *cmd);
+bstr_t         redisCmd_buildProtocolStr(RedisCmd *cmd);
+RedisErrorCode redisCmd_reset(RedisCmd *cmd, char *cmdName);
+int            redisCmd_setProtocolType(RedisCmd *cmd,
+                                      RedisProtocolType protocol);
+RedisRetVal*   redisCmd_exec(REDIS *redis, RedisCmd *cmd);
+bstr_t         redisCmd_getProtocolStr(RedisCmd *cmd);
+RedisRetVal*   redisCmd_getRetVal(RedisCmd *cmd);
 
-void         redisRetVal_free(RedisRetVal *rv);
+RedisCmdArray* redisCmdArray_new();
+void           redisCmdArray_free(RedisCmdArray *cmdArray);
+RedisErrorCode redisCmdArray_addCmd(RedisCmdArray *cmdArray, RedisCmd *cmd);
+bstr_t         redisCmdArray_buildProtocolStr(RedisCmdArray *cmdArray);
+bstr_t         redisCmdArray_getProtocolStr(RedisCmdArray *cmdArray);
+RedisCmd**     redisCmdArray_getCmds(RedisCmdArray *cmdArray);
+int            redisCmdArray_getCmdCount(RedisCmdArray *cmdArray);
+RedisRetVal**  redisCmdArray_exec(REDIS *redis, RedisCmdArray *cmdArray);
+RedisRetVal**  redisCmdArray_getRetVals(RedisCmdArray *cmdArray);
+
+RedisReturnType redisRetVal_getType(RedisRetVal *rv);
+bstr_t          redisRetVal_getError(RedisRetVal *rv);
+int             redisRetVal_getInteger(RedisRetVal *rv);
+bstr_t          redisRetVal_getLine(RedisRetVal *rv);
+bstr_t          redisRetVal_getBulk(RedisRetVal *rv);
+bstr_t*         redisRetVal_getMultiBulk(RedisRetVal *rv);
+int             redisRetVal_getMultiBulkSize(RedisRetVal *rv);
+void            redisRetVal_free(RedisRetVal *rv);
 
 RedisRetVal* redis_exec(REDIS *redis,
                         RedisProtocolType protocol,
@@ -156,6 +177,6 @@ RedisRetVal* redis_execStr(REDIS *redis,
                            RedisProtocolType protocol,
                            char *cmdStr,
                            int cmdStrLen);
-const char* redisError_getStr(redisErrorCode errorCode);
-const char* redisError_getSysErrorStr(redisErrorCode errorCode, int sysErrCode);
+const char* redisError_getStr(RedisErrorCode errorCode);
+const char* redisError_getSysErrorStr(RedisErrorCode errorCode, int sysErrCode);
 #endif /* REDIS_H_ */

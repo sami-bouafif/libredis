@@ -11,22 +11,41 @@
   <functions>
     <keyword type="struct" name="REDIS" link="libredis-libredis-API.html#REDIS:CAPS"/>
     <keyword type="struct" name="RedisCmd" link="libredis-libredis-API.html#RedisCmd"/>
+    <keyword type="struct" name="RedisCmdArray" link="libredis-libredis-API.html#RedisCmdArray"/>
     <keyword type="struct" name="RedisRetVal" link="libredis-libredis-API.html#RedisRetVal"/>
-    <keyword type="enum" name="enum RedisReturnType" link="libredis-libredis-API.html#RedisReturnType"/>
     <keyword type="enum" name="enum RedisProtocolType" link="libredis-libredis-API.html#RedisProtocolType"/>
-    <keyword type="enum" name="enum redisErrorCode" link="libredis-libredis-API.html#redisErrorCode"/>
+    <keyword type="enum" name="enum RedisErrorCode" link="libredis-libredis-API.html#RedisErrorCode"/>
+    <keyword type="enum" name="enum RedisReturnType" link="libredis-libredis-API.html#RedisReturnType"/>
     <keyword type="function" name="redis_connect ()" link="libredis-libredis-API.html#redis-connect"/>
     <keyword type="function" name="redis_close ()" link="libredis-libredis-API.html#redis-close"/>
     <keyword type="function" name="redisCmd_new ()" link="libredis-libredis-API.html#redisCmd-new"/>
     <keyword type="function" name="redisCmd_newFromStr ()" link="libredis-libredis-API.html#redisCmd-newFromStr"/>
     <keyword type="function" name="redisCmd_addArg ()" link="libredis-libredis-API.html#redisCmd-addArg"/>
-    <keyword type="function" name="redisCmd_free ()" link="libredis-libredis-API.html#redisCmd-free"/>
-    <keyword type="function" name="redisCmd_buildProtocolStr ()" link="libredis-libredis-API.html#redisCmd-buildProtocolStr"/>
-    <keyword type="function" name="redisCmd_exec ()" link="libredis-libredis-API.html#redisCmd-exec"/>
+    <keyword type="function" name="redisCmd_setArg ()" link="libredis-libredis-API.html#redisCmd-setArg"/>
     <keyword type="function" name="redisCmd_reset ()" link="libredis-libredis-API.html#redisCmd-reset"/>
     <keyword type="function" name="redisCmd_setProtocolType ()" link="libredis-libredis-API.html#redisCmd-setProtocolType"/>
+    <keyword type="function" name="redisCmd_buildProtocolStr ()" link="libredis-libredis-API.html#redisCmd-buildProtocolStr"/>
+    <keyword type="function" name="redisCmd_exec ()" link="libredis-libredis-API.html#redisCmd-exec"/>
+    <keyword type="function" name="redisCmd_getProtocolStr ()" link="libredis-libredis-API.html#redisCmd-getProtocolStr"/>
     <keyword type="function" name="redisCmd_getRetVal ()" link="libredis-libredis-API.html#redisCmd-getRetVal"/>
+    <keyword type="function" name="redisCmd_free ()" link="libredis-libredis-API.html#redisCmd-free"/>
+    <keyword type="function" name="redisRetVal_getType ()" link="libredis-libredis-API.html#redisRetVal-getType"/>
+    <keyword type="function" name="redisRetVal_getError ()" link="libredis-libredis-API.html#redisRetVal-getError"/>
+    <keyword type="function" name="redisRetVal_getInteger ()" link="libredis-libredis-API.html#redisRetVal-getInteger"/>
+    <keyword type="function" name="redisRetVal_getLine ()" link="libredis-libredis-API.html#redisRetVal-getLine"/>
+    <keyword type="function" name="redisRetVal_getBulk ()" link="libredis-libredis-API.html#redisRetVal-getBulk"/>
+    <keyword type="function" name="redisRetVal_getMultiBulk ()" link="libredis-libredis-API.html#redisRetVal-getMultiBulk"/>
+    <keyword type="function" name="redisRetVal_getMultiBulkSize ()" link="libredis-libredis-API.html#redisRetVal-getMultiBulkSize"/>
     <keyword type="function" name="redisRetVal_free ()" link="libredis-libredis-API.html#redisRetVal-free"/>
+    <keyword type="function" name="redisCmdArray_new ()" link="libredis-libredis-API.html#redisCmdArray-new"/>
+    <keyword type="function" name="redisCmdArray_addCmd ()" link="libredis-libredis-API.html#redisCmdArray-addCmd"/>
+    <keyword type="function" name="redisCmdArray_buildProtocolStr ()" link="libredis-libredis-API.html#redisCmdArray-buildProtocolStr"/>
+    <keyword type="function" name="redisCmdArray_getProtocolStr ()" link="libredis-libredis-API.html#redisCmdArray-getProtocolStr"/>
+    <keyword type="function" name="redisCmdArray_getCmds ()" link="libredis-libredis-API.html#redisCmdArray-getCmds"/>
+    <keyword type="function" name="redisCmdArray_getCmdCount ()" link="libredis-libredis-API.html#redisCmdArray-getCmdCount"/>
+    <keyword type="function" name="redisCmdArray_exec ()" link="libredis-libredis-API.html#redisCmdArray-exec"/>
+    <keyword type="function" name="redisCmdArray_getRetVals ()" link="libredis-libredis-API.html#redisCmdArray-getRetVals"/>
+    <keyword type="function" name="redisCmdArray_free ()" link="libredis-libredis-API.html#redisCmdArray-free"/>
     <keyword type="function" name="redis_exec ()" link="libredis-libredis-API.html#redis-exec"/>
     <keyword type="function" name="redis_execStr ()" link="libredis-libredis-API.html#redis-execStr"/>
     <keyword type="function" name="redisError_getStr ()" link="libredis-libredis-API.html#redisError-getStr"/>
@@ -34,7 +53,6 @@
     <keyword type="typedef" name="bstr_t" link="libredis-Binary-String-support.html#bstr-t"/>
     <keyword type="function" name="bstr_new ()" link="libredis-Binary-String-support.html#bstr-new"/>
     <keyword type="function" name="bstr_newFromCStr ()" link="libredis-Binary-String-support.html#bstr-newFromCStr"/>
-    <keyword type="function" name="bstr_free ()" link="libredis-Binary-String-support.html#bstr-free"/>
     <keyword type="function" name="bstr_toCStr ()" link="libredis-Binary-String-support.html#bstr-toCStr"/>
     <keyword type="function" name="bstr_len ()" link="libredis-Binary-String-support.html#bstr-len"/>
     <keyword type="function" name="bstr_cat ()" link="libredis-Binary-String-support.html#bstr-cat"/>
@@ -43,5 +61,6 @@
     <keyword type="function" name="bstr_dup ()" link="libredis-Binary-String-support.html#bstr-dup"/>
     <keyword type="function" name="bstr_asprintf ()" link="libredis-Binary-String-support.html#bstr-asprintf"/>
     <keyword type="function" name="bstr_scatprintf ()" link="libredis-Binary-String-support.html#bstr-scatprintf"/>
+    <keyword type="function" name="bstr_free ()" link="libredis-Binary-String-support.html#bstr-free"/>
   </functions>
 </book>

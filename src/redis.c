@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -76,24 +77,24 @@
  * void printResult(RedisRetVal *rv)
  * {
  *    int i;
- *    switch (rv->type)
+ *    switch (redisRetVal_getType(rv))
  *    {
  *        case REDIS_RETURN_INTEGER:
- *            printf("Return Type  : Integer\nReturn Value : %d\n", rv->integer);
+ *            printf("Return Type  : Integer\nReturn Value : %d\n", redisRetVal_getInteger(rv));
  *            break;
  *        case REDIS_RETURN_LINE:
- *            printf("Return Type  : Line\nReturn Value : %B\n", rv->line);
+ *            printf("Return Type  : Line\nReturn Value : %B\n", redisRetVal_getLine(rv));
  *            break;
  *        case REDIS_RETURN_ERROR:
- *            printf("Return Type  : error\nReturn Value : %B\n", rv->errorMsg);
+ *            printf("Return Type  : error\nReturn Value : %B\n", redisRetVal_getError(rv));
  *            break;
  *        case REDIS_RETURN_BULK:
- *            printf("Return Type  : bulk\nReturn Value : %B\n", rv->bulk);
+ *            printf("Return Type  : bulk\nReturn Value : %B\n", redisRetVal_getBulk(rv));
  *            break;
  *        case REDIS_RETURN_MULTIBULK:
  *            printf("Return Type  : multibulk\nReturn Value :\n");
- *            for (i = 0; i < rv->multibulkSize; i++)
- *                printf("\t%B\n", rv->multibulk[i]);
+ *            for (i = 0; i < redisRetVal_getMultiBulkSize(rv); i++)
+ *                printf("\t%B\n", redisRetVal_getMultiBulk(rv)[i]);
  *            printf("\n");
  *            break;
  *    }
@@ -151,6 +152,17 @@ struct _REDIS
   char  *errorstr;              /* Error details                          */
 };
 
+struct _RedisRetVal
+{
+ RedisReturnType  type;
+ bstr_t           errorMsg;
+ bstr_t           line;
+ bstr_t           bulk;
+ bstr_t           *multibulk;
+ int              multibulkSize;
+ int              integer;
+};
+
 struct _RedisCmd
  {
    RedisProtocolType   protocolType;
@@ -159,6 +171,14 @@ struct _RedisCmd
    bstr_t              protocolString;
    RedisRetVal         *returnValue;
  };
+
+struct _RedisCmdArray
+{
+  RedisCmd    **cmds;
+  RedisRetVal **returnValues;
+  int         cmdCount;
+  bstr_t      protocolString;
+};
 
 /* Description entry of an errorCode */
 typedef struct
@@ -195,7 +215,7 @@ static RedisErrorSpec redisErrorSpecTable[] =
  * Returns: string containing the error description of @errorCode or <code>NULL</code> if
  * no description found.
  **/
-const char* redisError_getStr(redisErrorCode errorCode)
+const char* redisError_getStr(RedisErrorCode errorCode)
 {
   int i = 0;
   while(redisErrorSpecTable[i].errStr != NULL)
@@ -217,7 +237,7 @@ const char* redisError_getStr(redisErrorCode errorCode)
  *
  * Returns: string containing the error description of a standard library error.
  **/
-const char* redisError_getSysErrorStr(redisErrorCode errorCode, int sysErrCode)
+const char* redisError_getSysErrorStr(RedisErrorCode errorCode, int sysErrCode)
 {
   if (errorCode == REDIS_ERROR_CNX_GAI) return gai_strerror(sysErrCode);
   return strerror(sysErrCode);
@@ -833,10 +853,10 @@ RedisCmd* redisCmd_newFromStr(RedisProtocolType protocolType,
  * Returns: %REDIS_NOERROR if all is ok, else the error code corresponding to
  * the error.
  **/
-int redisCmd_addArg(RedisCmd *cmd, char *arg, size_t arglen)
+RedisErrorCode redisCmd_addArg(RedisCmd *cmd, char *arg, size_t arglen)
 {
-  if (cmd == NULL) return REDIS_ERROR_CMD_INVALID;
-  if (arg == NULL) return REDIS_ERROR_CMD_ARGS;
+  if (cmd == NULL) return _redis_setSrvError(REDIS_ERROR_CMD_INVALID);
+  if (arg == NULL) return _redis_setSrvError(REDIS_ERROR_CMD_ARGS);
 
   cmd->argsCount++;
   cmd->args = (bstr_t *)realloc(cmd->args, cmd->argsCount * sizeof(bstr_t));
@@ -859,7 +879,7 @@ void redisCmd_free(RedisCmd *cmd)
   int i;
   if (cmd == NULL) return;
   if(cmd->protocolString != NULL) bstr_free(cmd->protocolString);
-  if(cmd->returnValue != NULL) redisRetVal_free(cmd->returnValue);
+  if(cmd->returnValue != NULL)    redisRetVal_free(cmd->returnValue);
   if (cmd->args != NULL)
   {
     for(i = 0; i < cmd->argsCount; i++)
@@ -869,6 +889,32 @@ void redisCmd_free(RedisCmd *cmd)
   free(cmd);
 }
 
+/*
+ * Duplicate a RedisCmd.
+ */
+RedisCmd* _redisCmd_dup(RedisCmd *cmd)
+{
+  RedisCmd *ret;
+  int i;
+  ret = redisCmd_new(cmd->protocolType, NULL);
+  if (ret == NULL) return NULL;
+  for (i = 0; i<cmd->argsCount; i++)
+  {
+    int rc;
+    rc = redisCmd_addArg(ret, (char *)cmd->args[i], bstr_len(cmd->args[i]));
+    if (rc != REDIS_NOERROR)
+    {
+      redisCmd_free(ret);
+      return NULL;
+    }
+  }
+  if (redisCmd_buildProtocolStr(ret) == NULL)
+  {
+    redisCmd_free(ret);
+    return NULL;
+  }
+  return ret;
+}
 /*
  * Generate a multibulk command.
  * return the generated command according to Redis protocol or NULL on error.
@@ -966,10 +1012,11 @@ static RedisRetVal* _redis_initReturnValue()
     _redis_setMallocError();
     return NULL;
   }
-  rv->bulk = NULL;
-  rv->errorMsg = NULL;
+  rv->bulk      = NULL;
+  rv->errorMsg  = NULL;
   rv->multibulk = NULL;
-  rv->line = NULL;
+  rv->line      = NULL;
+  rv->integer   = 0;
   return rv;
 }
 
@@ -978,7 +1025,7 @@ static RedisRetVal* _redis_initReturnValue()
  * The value returned is the same as
  * return NULL on error.
  */
-static RedisRetVal* _redisRetVal_parseError(char *rdata)
+static RedisRetVal* _redisRetVal_parseError(char *rdata, char **tail)
 {
   RedisRetVal *rv;
   char        *p = rdata;
@@ -993,7 +1040,7 @@ static RedisRetVal* _redisRetVal_parseError(char *rdata)
    * (the length of '-', '\r' and '\n') : bstr_len(rdata -1) -3
    */
 
-  while(strcmp(p, "\r\n") != 0) p++;
+  while(strncmp(p, "\r\n", 2) != 0) p++;
   rv->errorMsg = bstr_new(rdata, p - rdata);
   if (rv->errorMsg == NULL)
   {
@@ -1001,7 +1048,7 @@ static RedisRetVal* _redisRetVal_parseError(char *rdata)
     redisRetVal_free(rv);
     return NULL;
   }
-
+  if (tail != NULL) *tail = p+2;
   return rv;
 }
 
@@ -1009,7 +1056,7 @@ static RedisRetVal* _redisRetVal_parseError(char *rdata)
  * parse a line returned by Redis server and make the corresponding RedisRetVal.
  * return NULL on error.
  */
-static RedisRetVal* _redisRetVal_parseLine(char *rdata)
+static RedisRetVal* _redisRetVal_parseLine(char *rdata, char **tail)
 {
   RedisRetVal *rv;
   char        *p = rdata;
@@ -1023,7 +1070,7 @@ static RedisRetVal* _redisRetVal_parseLine(char *rdata)
    * (bstr_len(rdata -1)). The target length is the real rdata len minus 3
    * (the length of '+', '\r' and '\n') : bstr_len(rdata -1) -3
    */
-  while(strcmp(p, "\r\n") != 0) p++;
+  while(strncmp(p, "\r\n", 2) != 0) p++;
   rv->line = bstr_new(rdata, p - rdata);
   if (rv->line == NULL)
   {
@@ -1032,6 +1079,7 @@ static RedisRetVal* _redisRetVal_parseLine(char *rdata)
     return NULL;
   }
 
+  if (tail != NULL) *tail = p+2;
   return rv;
 }
 
@@ -1039,17 +1087,18 @@ static RedisRetVal* _redisRetVal_parseLine(char *rdata)
  * parse an int returned by Redis server and make the corresponding RedisRetVal.
  * return NULL on error.
  */
-static RedisRetVal* _redisRetVal_parseInteger(char *rdata)
+static RedisRetVal* _redisRetVal_parseInteger(char *rdata, char **tail)
 {
   RedisRetVal *rv;
-
+  char        *rest;
   rv = _redis_initReturnValue();
   if (rv == NULL) return NULL;
   rv->type = REDIS_RETURN_INTEGER;
 
   /* bstr_t can be used as char* */
-  rv->integer = strtol(rdata, NULL, 0);
+  rv->integer = strtol(rdata, &rest, 0);
 
+  if (tail != NULL) *tail = rest + 2;
   return rv;
 }
 
@@ -1057,18 +1106,18 @@ static RedisRetVal* _redisRetVal_parseInteger(char *rdata)
  * parse a bulk returned by Redis server and make the corresponding RedisRetVal.
  * return NULL on error.
  */
-static RedisRetVal* _redisRetVal_parseBulk(char *rdata)
+static RedisRetVal* _redisRetVal_parseBulk(char *rdata, char **tail)
 {
   RedisRetVal *rv;
   int               bulklen;
-  char              *tail;
+  char              *rest;
   rv = _redis_initReturnValue();
   if (rv == NULL) return NULL;
-  bulklen = strtol(rdata, &tail, 0);
+  bulklen = strtol(rdata, &rest, 0);
   rv->type = REDIS_RETURN_BULK;
   if (bulklen == -1) return rv;
-  tail += 2;
-  rv->bulk = bstr_new(tail, bulklen);
+  rest += 2;
+  rv->bulk = bstr_new(rest, bulklen);
   if (rv->bulk == NULL)
   {
     _redis_setMallocError();
@@ -1076,6 +1125,7 @@ static RedisRetVal* _redisRetVal_parseBulk(char *rdata)
     return NULL;
   }
 
+  if (tail != NULL) *tail = rest + bulklen + 2;
   return rv;
 }
 
@@ -1083,18 +1133,18 @@ static RedisRetVal* _redisRetVal_parseBulk(char *rdata)
  * parse a multibulk returned by Redis server and make the corresponding RedisRetVal.
  * return NULL on error.
  */
-static RedisRetVal* _redisRetVal_parseMultiBulk(char *rdata)
+static RedisRetVal* _redisRetVal_parseMultiBulk(char *rdata, char **tail)
 {
   RedisRetVal *rv;
   int         bulklen;
-  char        *tail;
+  char        *rest;
   int         i;
 
   rv = _redis_initReturnValue();
   if (rv == NULL) return NULL;
   rv->type = REDIS_RETURN_MULTIBULK;
   /* Get array size (multibuk size). If -1, an error, return a NULL multibulk. */
-  rv->multibulkSize = strtol(rdata, &tail, 0);
+  rv->multibulkSize = strtol(rdata, &rest, 0);
   if (rv->multibulkSize == -1)
     return rv;
   /* Allocate necessary space to store data of size rv->multibulkSize */
@@ -1105,31 +1155,31 @@ static RedisRetVal* _redisRetVal_parseMultiBulk(char *rdata)
     redisRetVal_free(rv);
     return NULL;
   }
-  tail += 2;                          /* Step through "\r\n" */
+  rest += 2;                          /* Step through "\r\n" */
   i = 0;
   while (i < rv->multibulkSize)       /* For each element in multibulk data */
   {
-    tail++;                           /* Step through $ */
-    bulklen = strtol(tail, &tail, 0); /* Get an element length */
-    tail += 2;                        /* Step through "\r\n" */
+    rest++;                           /* Step through $ */
+    bulklen = strtol(rest, &rest, 0); /* Get an element length */
+    rest += 2;                        /* Step through "\r\n" */
     if (bulklen == -1)                /* If the element length is -1 then element is NULL */
     {
       rv->multibulk[i] = NULL;
       i++;
       continue;
     }
-    /* Store the value of size bulklen starting from tail */
-    rv->multibulk[i] = bstr_new(tail, bulklen);
+    /* Store the value of size bulklen starting from rest */
+    rv->multibulk[i] = bstr_new(rest, bulklen);
     if (rv->multibulk[i] == NULL)
     {
       _redis_setMallocError();
       redisRetVal_free(rv);
       return NULL;
     }
-    tail += (bulklen + 2);            /* Jump to the end of data bypassing "\r\n" */
+    rest += (bulklen + 2);            /* Jump to the end of data bypassing "\r\n" */
     i++;
   }
-
+  if (tail != NULL) *tail = rest;
   return rv;
 }
 
@@ -1140,10 +1190,9 @@ static RedisRetVal* _redisRetVal_parseMultiBulk(char *rdata)
  * redisCmd_buildProtocolStr:
  * @cmd: #RedisCmd structure to build from the string.
  *
- * Build the command string according to the Redis protocol specified in
- * #RedisCmd.protocolType. This string will be sent to Redis server when @cmd
- * is executed.<sbr/>
- * It is not required to build the #RedisCmd.protocolType manually since it is
+ * Build the command string according to the Redis protocol stored in#RedisCmd.
+ * This string will be sent to Redis server when @cmd is executed.<sbr/>
+ * It is not required to build the protocol string manually since it is
  * generated when the @cmd is about to be executed. However redisCmd_buildProtocolStr()
  * can be useful in debugging tasks.
  *
@@ -1160,6 +1209,10 @@ bstr_t redisCmd_buildProtocolStr(RedisCmd *cmd)
     return NULL;
   }
 
+  /*
+   * if a protocol string is already generated, free it and build a new one
+   */
+  if (cmd->protocolString != NULL) bstr_free (cmd->protocolString);
   if (cmd->protocolType == REDIS_PROTOCOL_MULTIBULK)
     return _redisCmd_genMultiBulk(cmd);
 
@@ -1181,6 +1234,112 @@ bstr_t redisCmd_buildProtocolStr(RedisCmd *cmd)
   return NULL;
 }
 
+bstr_t redisCmd_getProtocolStr(RedisCmd *cmd)
+{
+  /*
+   * if a protocol string id already generated, return this one.
+   * if not, build a new one and return it.
+   */
+  return cmd->protocolString ? cmd->protocolString
+                             : redisCmd_buildProtocolStr(cmd);
+}
+
+/**
+ * redisRetVal_getType:
+ * @rv: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisReturnType redisRetVal_getType(RedisRetVal *rv)
+{
+  return rv->type;
+}
+
+/**
+ * redisRetVal_getError:
+ * @rv: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+bstr_t redisRetVal_getError(RedisRetVal *rv)
+{
+  assert(rv->type == REDIS_RETURN_ERROR);
+  return rv->errorMsg;
+}
+
+/**
+ * redisRetVal_getInteger:
+ * @rv: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+int redisRetVal_getInteger(RedisRetVal *rv)
+{
+  assert(rv->type == REDIS_RETURN_INTEGER);
+  return rv->integer;
+}
+
+/**
+ * redisRetVal_getLine:
+ * @rv: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+bstr_t redisRetVal_getLine(RedisRetVal *rv)
+{
+  assert(rv->type == REDIS_RETURN_LINE);
+  return rv->line;
+}
+
+/**
+ * redisRetVal_getBulk:
+ * @rv: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+bstr_t redisRetVal_getBulk(RedisRetVal *rv)
+{
+  assert(rv->type == REDIS_RETURN_BULK);
+  return rv->bulk;
+}
+
+/**
+ * redisRetVal_getMultiBulk:
+ * @rv: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+bstr_t* redisRetVal_getMultiBulk(RedisRetVal *rv)
+{
+  assert(rv->type == REDIS_RETURN_MULTIBULK);
+  return rv->multibulk;
+}
+
+/**
+ * redisRetVal_getMultiBulkSize:
+ * @rv: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+int redisRetVal_getMultiBulkSize(RedisRetVal *rv)
+{
+  assert(rv->type == REDIS_RETURN_MULTIBULK);
+  return rv->multibulkSize;
+}
 
 /**
  * redisRetVal_free:
@@ -1209,17 +1368,15 @@ void redisRetVal_free(RedisRetVal *rv)
 /*
  * Return the appropriate returnValue from string reveived from Redis.
  */
-static RedisRetVal* _redisRetVal_parse(bstr_t rdata, char **tail)
+static RedisRetVal* _redisRetVal_parse(char *rdata, char **tail)
 {
-  /* TODO : change this. use char *data = (char *)rdata */
-  char *data = (char *)rdata;
-  switch (*data)
+  switch (*rdata)
   {
-    case '-' : return _redisRetVal_parseError(++data);
-    case '+' : return _redisRetVal_parseLine(++data);
-    case '$' : return _redisRetVal_parseBulk(++data);
-    case '*' : return _redisRetVal_parseMultiBulk(++data);
-    case ':' : return _redisRetVal_parseInteger(++data);
+    case '-' : return _redisRetVal_parseError(++rdata, tail);
+    case '+' : return _redisRetVal_parseLine(++rdata, tail);
+    case '$' : return _redisRetVal_parseBulk(++rdata, tail);
+    case '*' : return _redisRetVal_parseMultiBulk(++rdata, tail);
+    case ':' : return _redisRetVal_parseInteger(++rdata, tail);
     default  : return NULL;
   }
 }
@@ -1236,14 +1393,15 @@ static RedisRetVal* _redisRetVal_parse(bstr_t rdata, char **tail)
  * @redis: #REDIS structure to use.
  * @cmd: #RedisCmd structure to execute
  *
- * Execute @cmd by sending the corresponding #RedisCmd.protocolString and
+ * Execute @cmd by sending the corresponding protocol string and
  * receiving the response from Redis server described by @redis structure. This
- * response will stored in #RedisCmd.returnValue.
+ * response will stored in #RedisCmd and can be retrieved with
+ * redisCmd_getRetVal().
  *
  * Returns: a #RedisRetVal structure containing the response of the server or
  * <code>NULL</code> on error and <code>redis_errCode</code> is set accordingly.
- * Note that the return value should never be freed since it is the same as
- * #RedisCmd.returnValue and it will be freed when @cmd is freed.
+ * Note that the return value should never be freed since it references the
+ * the return value stored in #RedisCmd and will be freed when @cmd is freed.
  **/
 RedisRetVal* redisCmd_exec(REDIS *redis, RedisCmd *cmd)
 {
@@ -1259,7 +1417,7 @@ RedisRetVal* redisCmd_exec(REDIS *redis, RedisCmd *cmd)
 
   rdata = _redis_receive(redis);
   if (rdata == NULL) return NULL;
-  rv = _redisRetVal_parse(rdata, NULL);
+  rv = _redisRetVal_parse((char *)rdata, NULL);
   cmd->returnValue = rv;
   bstr_free(rdata);
   return rv;
@@ -1276,7 +1434,7 @@ RedisRetVal* redisCmd_exec(REDIS *redis, RedisCmd *cmd)
  * Returns: return %REDIS_NOERROR on success or the corresponding error code on
  * error.
  **/
-int redisCmd_reset(RedisCmd *cmd, char *cmdName)
+RedisErrorCode redisCmd_reset(RedisCmd *cmd, char *cmdName)
 {
   int i;
 
@@ -1295,6 +1453,7 @@ int redisCmd_reset(RedisCmd *cmd, char *cmdName)
     for(i = 0; i < cmd->argsCount; i++)
       if (cmd->args[i] != NULL) bstr_free(cmd->args[i]);
     free(cmd->args);
+    cmd->args = NULL;
   }
   cmd->argsCount = 0;
   if (cmdName != NULL)
@@ -1304,10 +1463,6 @@ int redisCmd_reset(RedisCmd *cmd, char *cmdName)
   return REDIS_NOERROR;
 }
 
-/*
- *
- * return REDIS_NOERROR if ok, -1 if the protocol string cannot be generated.
- */
 /**
  * redisCmd_setProtocolType:
  * @cmd: the #RedisCmd structure to modify.
@@ -1317,7 +1472,7 @@ int redisCmd_reset(RedisCmd *cmd, char *cmdName)
  * If the protocol string is already generated, it refreshen it to reflect the
  * protocol type specified.
  *
- * Returns: REDIS_NOERROR on success or <code>-1</code> if the protocol string
+ * Returns: %REDIS_NOERROR on success or <code>-1</code> if the protocol string
  * cannot be generated.
  **/
 int redisCmd_setProtocolType(RedisCmd *cmd, RedisProtocolType protocol)
@@ -1327,9 +1482,39 @@ int redisCmd_setProtocolType(RedisCmd *cmd, RedisProtocolType protocol)
   return REDIS_NOERROR;
 }
 
-/*
+/**
+ * redisCmd_setArg:
+ * @cmd: the #RedisCmd structure to modify.
+ * @argNum: index of the arg to modify.
+ * @argVal: the new value of the arg.
+ * @argLen: the length of the arg or <code>-1</code>.
  *
+ * Sets the arg at index @argNum to a new value specified by @argVal. If @argLen
+ * is <code>-1</code>, the length of @argVal is determined via
+ * <code>strlen()</code>.
+ *
+ * This function is useful for reusing the same command without allocating a new
+ * one, just change the args and re-execute.
+ *
+ * Returns: %REDIS_NOERROR on success.
  */
+RedisErrorCode redisCmd_setArg(RedisCmd *cmd,
+                               int argNum,
+                               char *argVal,
+                               size_t argLen)
+{
+  bstr_t newArg;
+  if (cmd->returnValue != NULL) redisRetVal_free(cmd->returnValue);
+  if (argNum <=0 || argNum > cmd->argsCount)
+    return _redis_setSrvError(REDIS_ERROR_CMD_INVALIDARGNUM);
+
+  newArg = bstr_new(argVal, argLen);
+  if (newArg == NULL)
+    return _redis_setMallocError();
+  if (cmd->args[argNum] != NULL) bstr_free(cmd->args[argNum]);
+  cmd->args[argNum] = newArg;
+  return REDIS_NOERROR;
+}
 /**
  * redisCmd_getRetVal:
  * @cmd: a #RedisCmd structure.
@@ -1337,20 +1522,12 @@ int redisCmd_setProtocolType(RedisCmd *cmd, RedisProtocolType protocol)
  * Get the return value of a @cmd or <code>NULL</code> If the command has not
  * been executed.
  *
- * Returns: #RedisCmd.returnValue of @cmd.
+ * Returns: the return value stored in @cmd.
  **/
 RedisRetVal* redisCmd_getRetVal(RedisCmd *cmd)
 {
   return cmd->returnValue;
 }
-/*
- *
- *
- * Return a pointer to RedisRetVal structure or NULL on error. errorCode
- * is set accordingly.
- *
- * NB.
- */
 
 /**
  * redis_exec:
@@ -1413,7 +1590,6 @@ RedisRetVal* redis_exec(REDIS *redis,
     }
     arglen = (arglen == -1) ? strlen(arg)
                             : arglen;
-    printf("ARG    : %s\nARGLEN : %d\n", arg, arglen);
     if (redisCmd_addArg(cmd, arg, arglen) != REDIS_NOERROR)
     {
       redisCmd_free(cmd);
@@ -1440,7 +1616,7 @@ RedisRetVal* redis_exec(REDIS *redis,
     redisCmd_free(cmd);
     return NULL;
   }
-  ret = _redisRetVal_parse(rdata, NULL);
+  ret = _redisRetVal_parse((char *)rdata, NULL);
 
   redisCmd_free(cmd);
   bstr_free(rdata);
@@ -1512,10 +1688,204 @@ RedisRetVal* redis_execStr(REDIS *redis,
     redisCmd_free(cmd);
     return NULL;
   }
-  ret = _redisRetVal_parse(rdata, NULL);
+  ret = _redisRetVal_parse((char *)rdata, NULL);
 
   redisCmd_free(cmd);
   bstr_free(rdata);
 
+  return ret;
+}
+
+/**
+ * redisCmdArray_new:
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisCmdArray* redisCmdArray_new()
+{
+  RedisCmdArray *cmdArray;
+  cmdArray = (RedisCmdArray *)malloc(sizeof(RedisCmdArray));
+  if (cmdArray == NULL)
+  {
+    _redis_setMallocError();
+    return NULL;
+  }
+  cmdArray->cmds           = NULL;
+  cmdArray->returnValues   = NULL;
+  cmdArray->cmdCount       = 0;
+  cmdArray->protocolString = NULL;
+  return cmdArray;
+}
+
+/**
+ * redisCmdArray_free:
+ * @cmdArray: 
+ *
+ * 
+ **/
+void redisCmdArray_free(RedisCmdArray *cmdArray)
+{
+ if (cmdArray == NULL) return;
+ if (cmdArray->protocolString != NULL) bstr_free(cmdArray->protocolString);
+ if (cmdArray->cmds != NULL)
+ {
+   int i;
+   for (i = 0; i <= cmdArray->cmdCount; i++)
+     redisCmd_free(cmdArray->cmds[i]);
+   free(cmdArray->cmds);
+ }
+ if (cmdArray->returnValues != NULL)free(cmdArray->returnValues);
+ free(cmdArray);
+}
+
+/**
+ * redisCmdArray_addCmd:
+ * @cmdArray: 
+ * @cmd: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisErrorCode redisCmdArray_addCmd(RedisCmdArray *cmdArray, RedisCmd *cmd)
+{
+  RedisCmd *cmdCopy;
+  /* reallocate to cmdCount + 2: the new RedisCmd and the NULL termination */
+  cmdArray->cmds = (RedisCmd **)realloc(cmdArray->cmds,
+                                        (cmdArray->cmdCount +2) * sizeof(RedisCmd *));
+  if (cmdArray->cmds == NULL)
+    return _redis_setMallocError();
+
+  if ((cmdCopy = _redisCmd_dup(cmd)) == NULL)
+      return redis_errCode;
+  cmdArray->cmds[cmdArray->cmdCount] = cmdCopy;
+  cmdArray->cmdCount++;
+  cmdArray->cmds[cmdArray->cmdCount] = NULL;
+  return REDIS_NOERROR;
+}
+
+/**
+ * redisCmdArray_buildProtocolStr:
+ * @cmdArray: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+bstr_t redisCmdArray_buildProtocolStr(RedisCmdArray *cmdArray)
+{
+  int    i;
+  bstr_t ret = NULL;
+
+  for (i=0; i < cmdArray->cmdCount; i++)
+  {
+    ret = bstr_catBStr(ret, redisCmd_getProtocolStr(cmdArray->cmds[i]));
+    if (ret == NULL)
+    {
+      bstr_free(ret);
+      _redis_setMallocError();
+      return NULL;
+    }
+  }
+  if (cmdArray->protocolString != NULL) bstr_free(cmdArray->protocolString);
+  cmdArray->protocolString = ret;
+  return ret;
+}
+
+/**
+ * redisCmdArray_exec:
+ * @redis: 
+ * @cmdArray: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisRetVal** redisCmdArray_exec(REDIS *redis, RedisCmdArray *cmdArray)
+{
+  bstr_t            rdata;
+  char              *tail;
+  RedisRetVal       *rv;
+  RedisRetVal       **ret;
+  int               rc, i;
+
+  if (cmdArray->protocolString == NULL)
+    if (redisCmdArray_buildProtocolStr(cmdArray) == NULL) return NULL;
+
+  rc = _redis_send(redis, cmdArray->protocolString);
+  if (rc != REDIS_NOERROR) return NULL;
+
+  rdata = _redis_receive(redis);
+  if (rdata == NULL) return NULL;
+  ret = (RedisRetVal **)malloc((cmdArray->cmdCount+ 1) * sizeof(RedisRetVal *));
+  if (ret == NULL)
+  {
+    _redis_setMallocError();
+    return NULL;
+  }
+  tail = (char *)rdata;
+  for (i=0; i < cmdArray->cmdCount; i++)
+  {
+    rv = _redisRetVal_parse(tail, &tail);
+    cmdArray->cmds[i]->returnValue = rv;
+    ret[i] = rv;
+  }
+  ret[cmdArray->cmdCount] = NULL;
+  cmdArray->returnValues = ret;
+  bstr_free(rdata);
+  return ret;
+
+}
+
+/**
+ * redisCmdArray_getProtocolStr:
+ * @cmdArray: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+bstr_t redisCmdArray_getProtocolStr(RedisCmdArray *cmdArray)
+{
+  return cmdArray->protocolString ? cmdArray->protocolString
+                                  : redisCmdArray_buildProtocolStr(cmdArray);
+}
+
+RedisCmd** redisCmdArray_getCmds(RedisCmdArray *cmdArray)
+{
+  return cmdArray->cmds;
+}
+
+int redisCmdArray_getCmdCount(RedisCmdArray *cmdArray)
+{
+  return cmdArray->cmdCount;
+}
+
+/**
+ * redisCmdArray_getRetVals:
+ * @cmdArray: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisRetVal**  redisCmdArray_getRetVals(RedisCmdArray *cmdArray)
+{
+  RedisRetVal **ret;
+  int i;
+
+  ret = (RedisRetVal **)malloc((cmdArray->cmdCount+ 1) * sizeof(RedisRetVal *));
+  if (ret == NULL)
+  {
+    _redis_setMallocError();
+    return NULL;
+  }
+  for (i=0; i < cmdArray->cmdCount; i++)
+    ret[i] = cmdArray->cmds[i]->returnValue;
+  ret[cmdArray->cmdCount] = NULL;
+  if (cmdArray->returnValues != NULL) free(cmdArray->returnValues);
+  cmdArray->returnValues = ret;
   return ret;
 }
