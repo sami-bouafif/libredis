@@ -180,6 +180,8 @@ struct _RedisCmdArray
   bstr_t      protocolString;
 };
 
+/* Are we in multi mode? */
+static volatile short int _redis_multiMode = 0;
 /* Description entry of an errorCode */
 typedef struct
 {
@@ -190,18 +192,21 @@ typedef struct
 /* List of error descriptions */
 static RedisErrorSpec redisErrorSpecTable[] =
 {
-  {REDIS_NOERROR,               "All is OK."                           },
-  {REDIS_ERROR_MEM_ALLOC,       "Error allocating memory."             },
-  {REDIS_ERROR_CNX_SOCKET,      "Error creating socket."               },
-  {REDIS_ERROR_CNX_CONNECT,     "Unable to connect to server."         },
-  {REDIS_ERROR_CNX_TIMEOUT,     "Connection timeout."                  },
-  {REDIS_ERROR_CNX_SEND,        "Error sending data."                  },
-  {REDIS_ERROR_CNX_RECEIVE,     "Error receiving data."                },
-  {REDIS_ERROR_CNX_GAI,         "Error getting address info."          },
-  {REDIS_ERROR_CMD_UNKNOWN,     "Unknown redis command."               },
-  {REDIS_ERROR_CMD_ARGS,        "Invalid arguments."                   },
-  {REDIS_ERROR_CMD_INVALID,     "Invalid command structure."           },
-  {REDIS_ERROR_CMD_UNBALANCEDQ, "Unbalanced quotes in command string." },
+  {REDIS_NOERROR,                 "All is OK."                           },
+  {REDIS_ERROR_MEM_ALLOC,         "Error allocating memory."             },
+  {REDIS_ERROR_CNX_SOCKET,        "Error creating socket."               },
+  {REDIS_ERROR_CNX_CONNECT,       "Unable to connect to server."         },
+  {REDIS_ERROR_CNX_TIMEOUT,       "Connection timeout."                  },
+  {REDIS_ERROR_CNX_SEND,          "Error sending data."                  },
+  {REDIS_ERROR_CNX_RECEIVE,       "Error receiving data."                },
+  {REDIS_ERROR_CNX_GAI,           "Error getting address info."          },
+  {REDIS_ERROR_CMD_UNKNOWN,       "Unknown Redis command."               },
+  {REDIS_ERROR_CMD_ARGS,          "Invalid arguments."                   },
+  {REDIS_ERROR_CMD_INVALIDARGNUM, "Arg index out of bound."              },
+  {REDIS_ERROR_CMD_INVALID,       "Invalid command structure."           },
+  {REDIS_ERROR_CMD_UNBALANCEDQ,   "Unbalanced quotes in command string." },
+  {REDIS_ERROR_MLT_UNSUPPORTED,   "Multi not supported by server."       },
+  {REDIS_ERROR_MLT_NOTMULTIMODE,  "Not in Multi mode"                    },
   {-1, NULL}
 };
 
@@ -1822,6 +1827,7 @@ RedisRetVal** redisCmdArray_exec(REDIS *redis, RedisCmdArray *cmdArray)
   ret = (RedisRetVal **)malloc((cmdArray->cmdCount+ 1) * sizeof(RedisRetVal *));
   if (ret == NULL)
   {
+    bstr_free(rdata);
     _redis_setMallocError();
     return NULL;
   }
@@ -1888,4 +1894,121 @@ RedisRetVal**  redisCmdArray_getRetVals(RedisCmdArray *cmdArray)
   if (cmdArray->returnValues != NULL) free(cmdArray->returnValues);
   cmdArray->returnValues = ret;
   return ret;
+}
+
+/**
+ * redisMulti_begin:
+ * @redis: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisErrorCode redisMulti_begin(REDIS *redis)
+{
+  RedisRetVal *rv;
+  rv = redis_execStr(redis, REDIS_PROTOCOL_MULTIBULK, "MULTI", -1);
+  if (rv == NULL) return redis_errCode;
+
+  if (redisRetVal_getType(rv) == REDIS_RETURN_ERROR)
+    _redis_setSrvError(REDIS_ERROR_MLT_UNSUPPORTED);
+
+  _redis_multiMode = 1;
+  redisRetVal_free(rv);
+  return REDIS_NOERROR;
+}
+
+/**
+ * redisMulti_exec:
+ * @redis: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisRetVal** redisMulti_exec(REDIS *redis)
+{
+  RedisCmd    *cmd;
+  bstr_t      protocolStr;
+  RedisRetVal **ret;
+  int         retSize;
+  int         rc;
+  bstr_t      rdata;
+  char        *p;
+  int         i;
+
+  if (!_redis_multiMode)
+  {
+    _redis_setSrvError(REDIS_ERROR_MLT_NOTMULTIMODE);
+    return NULL;
+  }
+  cmd = redisCmd_new(REDIS_PROTOCOL_MULTIBULK, "EXEC");
+  if (cmd == NULL) return NULL;
+  protocolStr = redisCmd_buildProtocolStr(cmd);
+  if (protocolStr == NULL)return NULL;
+  rc = _redis_send(redis, cmd->protocolString);
+  _redis_multiMode = 0;
+  redisCmd_free(cmd);
+  if (rc != REDIS_NOERROR) return NULL;
+
+  rdata = _redis_receive(redis);
+  if (rdata == NULL) return NULL;
+
+  /* Bypass '*' */
+  p = (char *)rdata +1;
+  /* Get the multiBulk size */
+  retSize = strtol(p, &p, 0);
+  ret = (RedisRetVal **)malloc((retSize + 1) * sizeof(RedisRetVal *));
+  if (ret == NULL)
+  {
+    bstr_free(rdata);
+    _redis_setMallocError();
+    return NULL;
+  }
+
+  /* Bypass "\r\n" */
+  p += 2;
+  for (i=0; i < retSize; i++)
+    ret[i] = _redisRetVal_parse(p, &p);
+  ret[retSize] = NULL;
+  bstr_free(rdata);
+  return ret;
+}
+
+/**
+ * redisMulti_discard:
+ * @redis: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+RedisErrorCode redisMulti_discard(REDIS *redis)
+{
+  RedisRetVal *rv;
+  if (!_redis_multiMode)
+    return _redis_setSrvError(REDIS_ERROR_MLT_NOTMULTIMODE);
+
+  rv = redis_execStr(redis, REDIS_PROTOCOL_MULTIBULK, "DISCARD", -1);
+  if (rv == NULL) return redis_errCode;
+
+  if (redisRetVal_getType(rv) == REDIS_RETURN_ERROR)
+    _redis_setSrvError(REDIS_ERROR_MLT_UNSUPPORTED);
+
+  _redis_multiMode = 0;
+  redisRetVal_free(rv);
+  return REDIS_NOERROR;
+}
+
+/**
+ * redisMulti_isMultiMode:
+ * @: 
+ *
+ * 
+ *
+ * Returns: 
+ **/
+int redisMulti_isMultiMode()
+{
+  return _redis_multiMode;
 }

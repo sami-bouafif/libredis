@@ -91,6 +91,10 @@ enum                <a class="link" href="libredis-libredis-API.html#RedisReturn
                                                          <em class="parameter"><code><a class="link" href="libredis-libredis-API.html#RedisCmdArray" title="RedisCmdArray"><span class="type">RedisCmdArray</span></a> *cmdArray</code></em>);
 <a class="link" href="libredis-libredis-API.html#RedisRetVal" title="RedisRetVal"><span class="returnvalue">RedisRetVal</span></a>**       <a class="link" href="libredis-libredis-API.html#redisCmdArray-getRetVals" title="redisCmdArray_getRetVals ()">redisCmdArray_getRetVals</a>            (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#RedisCmdArray" title="RedisCmdArray"><span class="type">RedisCmdArray</span></a> *cmdArray</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="libredis-libredis-API.html#redisCmdArray-free" title="redisCmdArray_free ()">redisCmdArray_free</a>                  (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#RedisCmdArray" title="RedisCmdArray"><span class="type">RedisCmdArray</span></a> *cmdArray</code></em>);
+<a class="link" href="libredis-libredis-API.html#RedisErrorCode" title="enum RedisErrorCode"><span class="returnvalue">RedisErrorCode</span></a>      <a class="link" href="libredis-libredis-API.html#redisMulti-begin" title="redisMulti_begin ()">redisMulti_begin</a>                    (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#REDIS:CAPS" title="REDIS"><span class="type">REDIS</span></a> *redis</code></em>);
+<a class="link" href="libredis-libredis-API.html#RedisErrorCode" title="enum RedisErrorCode"><span class="returnvalue">RedisErrorCode</span></a>      <a class="link" href="libredis-libredis-API.html#redisMulti-discard" title="redisMulti_discard ()">redisMulti_discard</a>                  (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#REDIS:CAPS" title="REDIS"><span class="type">REDIS</span></a> *redis</code></em>);
+<a class="link" href="libredis-libredis-API.html#RedisRetVal" title="RedisRetVal"><span class="returnvalue">RedisRetVal</span></a>**       <a class="link" href="libredis-libredis-API.html#redisMulti-exec" title="redisMulti_exec ()">redisMulti_exec</a>                     (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#REDIS:CAPS" title="REDIS"><span class="type">REDIS</span></a> *redis</code></em>);
+<span class="returnvalue">int</span>                 <a class="link" href="libredis-libredis-API.html#redisMulti-isMultiMode" title="redisMulti_isMultiMode ()">redisMulti_isMultiMode</a>              ();
 <a class="link" href="libredis-libredis-API.html#RedisRetVal" title="RedisRetVal"><span class="returnvalue">RedisRetVal</span></a>*        <a class="link" href="libredis-libredis-API.html#redis-exec" title="redis_exec ()">redis_exec</a>                          (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#REDIS:CAPS" title="REDIS"><span class="type">REDIS</span></a> *redis</code></em>,
                                                          <em class="parameter"><code><a class="link" href="libredis-libredis-API.html#RedisProtocolType" title="enum RedisProtocolType"><span class="type">RedisProtocolType</span></a> protocol</code></em>,
                                                          <em class="parameter"><code><span class="type">char</span> *cmdName</code></em>,
@@ -134,7 +138,7 @@ details and their return values should never be freed.
 <p>
 </p>
 <div class="example">
-<a name="id618126"></a><p class="title"><b>Example 1. Example using libredis.</b></p>
+<a name="id485402"></a><p class="title"><b>Example 1. Example using libredis.</b></p>
 <div class="example-contents">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
     <tbody>
@@ -370,8 +374,8 @@ with any <a class="link" href="libredis-libredis-API.html#RedisCmd" title="Redis
   REDIS_ERROR_CMD_INVALIDARGNUM,
   REDIS_ERROR_CMD_INVALID,
   REDIS_ERROR_CMD_UNBALANCEDQ,
-  REDIS_ERROR_RET_UNVALID,
-  REDIS_ERROR_RET_NOTMULTIBULK
+  REDIS_ERROR_MLT_UNSUPPORTED,
+  REDIS_ERROR_MLT_NOTMULTIMODE
 } RedisErrorCode;
 </pre>
 </div>
@@ -380,7 +384,6 @@ with any <a class="link" href="libredis-libredis-API.html#RedisCmd" title="Redis
 <a name="RedisReturnType"></a><h3>enum RedisReturnType</h3>
 <pre class="programlisting">typedef enum
 {
-  REDIS_RETURN_UNKNOWN,
   REDIS_RETURN_ERROR,
   REDIS_RETURN_LINE,
   REDIS_RETURN_BULK,
@@ -988,6 +991,58 @@ when they are no longer used.
 <div class="refsect2" title="redisCmdArray_free ()">
 <a name="redisCmdArray-free"></a><h3>redisCmdArray_free ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                redisCmdArray_free                  (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#RedisCmdArray" title="RedisCmdArray"><span class="type">RedisCmdArray</span></a> *cmdArray</code></em>);</pre>
+</div>
+<hr>
+<div class="refsect2" title="redisMulti_begin ()">
+<a name="redisMulti-begin"></a><h3>redisMulti_begin ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-libredis-API.html#RedisErrorCode" title="enum RedisErrorCode"><span class="returnvalue">RedisErrorCode</span></a>      redisMulti_begin                    (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#REDIS:CAPS" title="REDIS"><span class="type">REDIS</span></a> *redis</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> 
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="redisMulti_discard ()">
+<a name="redisMulti-discard"></a><h3>redisMulti_discard ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-libredis-API.html#RedisErrorCode" title="enum RedisErrorCode"><span class="returnvalue">RedisErrorCode</span></a>      redisMulti_discard                  (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#REDIS:CAPS" title="REDIS"><span class="type">REDIS</span></a> *redis</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> 
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="redisMulti_exec ()">
+<a name="redisMulti-exec"></a><h3>redisMulti_exec ()</h3>
+<pre class="programlisting"><a class="link" href="libredis-libredis-API.html#RedisRetVal" title="RedisRetVal"><span class="returnvalue">RedisRetVal</span></a>**       redisMulti_exec                     (<em class="parameter"><code><a class="link" href="libredis-libredis-API.html#REDIS:CAPS" title="REDIS"><span class="type">REDIS</span></a> *redis</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> 
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="redisMulti_isMultiMode ()">
+<a name="redisMulti-isMultiMode"></a><h3>redisMulti_isMultiMode ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>                 redisMulti_isMultiMode              ();</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> 
+</td>
+</tr></tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2" title="redis_exec ()">

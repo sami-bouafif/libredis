@@ -46,6 +46,10 @@
     <keyword type="function" name="redisCmdArray_exec ()" link="libredis-libredis-API.html#redisCmdArray-exec"/>
     <keyword type="function" name="redisCmdArray_getRetVals ()" link="libredis-libredis-API.html#redisCmdArray-getRetVals"/>
     <keyword type="function" name="redisCmdArray_free ()" link="libredis-libredis-API.html#redisCmdArray-free"/>
+    <keyword type="function" name="redisMulti_begin ()" link="libredis-libredis-API.html#redisMulti-begin"/>
+    <keyword type="function" name="redisMulti_discard ()" link="libredis-libredis-API.html#redisMulti-discard"/>
+    <keyword type="function" name="redisMulti_exec ()" link="libredis-libredis-API.html#redisMulti-exec"/>
+    <keyword type="function" name="redisMulti_isMultiMode ()" link="libredis-libredis-API.html#redisMulti-isMultiMode"/>
     <keyword type="function" name="redis_exec ()" link="libredis-libredis-API.html#redis-exec"/>
     <keyword type="function" name="redis_execStr ()" link="libredis-libredis-API.html#redis-execStr"/>
     <keyword type="function" name="redisError_getStr ()" link="libredis-libredis-API.html#redisError-getStr"/>

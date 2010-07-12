@@ -125,8 +125,8 @@ typedef enum
   REDIS_ERROR_CMD_INVALIDARGNUM,
   REDIS_ERROR_CMD_INVALID,
   REDIS_ERROR_CMD_UNBALANCEDQ,
-  REDIS_ERROR_RET_UNVALID,
-  REDIS_ERROR_RET_NOTMULTIBULK
+  REDIS_ERROR_MLT_UNSUPPORTED,
+  REDIS_ERROR_MLT_NOTMULTIMODE
 } RedisErrorCode;
 
 REDIS* redis_connect(char *host, char *port);
@@ -168,6 +168,11 @@ bstr_t          redisRetVal_getBulk(RedisRetVal *rv);
 bstr_t*         redisRetVal_getMultiBulk(RedisRetVal *rv);
 int             redisRetVal_getMultiBulkSize(RedisRetVal *rv);
 void            redisRetVal_free(RedisRetVal *rv);
+
+RedisErrorCode  redisMulti_begin(REDIS *redis);
+RedisErrorCode  redisMulti_discard(REDIS *redis);
+RedisRetVal**   redisMulti_exec(REDIS *redis);
+int             redisMulti_isMultiMode();
 
 RedisRetVal* redis_exec(REDIS *redis,
                         RedisProtocolType protocol,

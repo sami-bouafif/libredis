@@ -39,6 +39,10 @@
 <ANCHOR id="redisCmdArray-exec" href="libredis/libredis-libredis-API.html#redisCmdArray-exec">
 <ANCHOR id="redisCmdArray-getRetVals" href="libredis/libredis-libredis-API.html#redisCmdArray-getRetVals">
 <ANCHOR id="redisCmdArray-free" href="libredis/libredis-libredis-API.html#redisCmdArray-free">
+<ANCHOR id="redisMulti-begin" href="libredis/libredis-libredis-API.html#redisMulti-begin">
+<ANCHOR id="redisMulti-discard" href="libredis/libredis-libredis-API.html#redisMulti-discard">
+<ANCHOR id="redisMulti-exec" href="libredis/libredis-libredis-API.html#redisMulti-exec">
+<ANCHOR id="redisMulti-isMultiMode" href="libredis/libredis-libredis-API.html#redisMulti-isMultiMode">
 <ANCHOR id="redis-exec" href="libredis/libredis-libredis-API.html#redis-exec">
 <ANCHOR id="redis-execStr" href="libredis/libredis-libredis-API.html#redis-execStr">
 <ANCHOR id="redisError-getStr" href="libredis/libredis-libredis-API.html#redisError-getStr">

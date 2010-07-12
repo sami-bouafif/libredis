@@ -37,6 +37,10 @@ redisCmdArray_getCmdCount
 redisCmdArray_exec
 redisCmdArray_getRetVals
 redisCmdArray_free
+redisMulti_begin
+redisMulti_discard
+redisMulti_exec
+redisMulti_isMultiMode
 redis_exec
 redis_execStr
 redisError_getStr
